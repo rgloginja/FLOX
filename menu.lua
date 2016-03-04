@@ -1,17 +1,10 @@
----------------------------------------------------------------------------------
---
--- scene.lua
---
----------------------------------------------------------------------------------
-
-local sceneName = "menu"
-
 local composer = require( "composer" )
+local scene = composer.newScene()
 
--- Load scene with same root filename as this file
-local scene = composer.newScene( sceneName )
+--local ads = require( "ads" )
 
----------------------------------------------------------------------------------
+local params
+
 local x
 
 local BackgroundImage
@@ -21,23 +14,21 @@ local backgroundMusicChannel
 
 local StartButton
 
+--local myData = require( "mydata" )
+
+local function loadGame( event )
+    -- body
+    local options = {
+        effect = "crossFade",
+        time = 1000
+    }
+
+    composer.gotoScene( "gameMain", options )
+
+end
+
 function scene:create( event )
     local sceneGroup = self.view
-
-    -- Called when the scene's view does not exist
-    -- 
-    -- INSERT code here to initialize the scene
-    -- e.g. add display objects to 'sceneGroup', add touch listeners, etc
-    local function loadGame( event )
-        -- body
-        local options = {
-            effect = "fade",
-            time = 1000
-        }
-
-        composer.gotoScene( "mainGame", options )
-
-    end
 
     backgroundMusic = audio.loadSound( "bg2.ogg" )
     backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=50 } )
@@ -56,62 +47,34 @@ function scene:create( event )
     StartButton:addEventListener("touch", loadGame)
     sceneGroup:insert(StartButton)
 
-    function function1(e)
-        transition.to(StartButton,{time=800,alpha=1, onComplete=function2})
-    end
-
-    function function2(e)
-        transition.to(StartButton,{time=800,alpha=0, onComplete=function1})
-    end
-    transition.to(StartButton,{time=800,alpha=0.2, onComplete = function1})
-
 end
 
 function scene:show( event )
     local sceneGroup = self.view
-    local phase = event.phase
 
-    if phase == "will" then
-       
-    elseif phase == "did" then
-       --composer.removeScene("mainGame");
-    end 
+    if event.phase == "did" then
+        composer.removeScene( "gameMain" ) 
+    end
 end
 
 function scene:hide( event )
     local sceneGroup = self.view
-    local phase = event.phase
-
+    
     if event.phase == "will" then
-        -- Called when the scene is on screen and is about to move off screen
-        --
-        -- INSERT code here to pause the scene
-        -- e.g. stop timers, stop animation, unload sounds, etc.)
-    elseif phase == "did" then
-        -- Called when the scene is now off screen
-        --composer.removeScene("menu")
-		
-    end 
-end
+    end
 
+end
 
 function scene:destroy( event )
     local sceneGroup = self.view
-
-    -- Called prior to the removal of scene's "view" (sceneGroup)
-    -- 
-    -- INSERT code here to cleanup the scene
-    -- e.g. remove display objects, remove touch listeners, save state, etc
+    
 end
 
 ---------------------------------------------------------------------------------
-
--- Listener setup
+-- END OF YOUR IMPLEMENTATION
+---------------------------------------------------------------------------------
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
----------------------------------------------------------------------------------
-
 return scene
