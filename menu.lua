@@ -1,10 +1,6 @@
 local composer = require( "composer" )
 local scene = composer.newScene()
 
---local ads = require( "ads" )
-
-local params
-
 local x
 
 local BackgroundImage
@@ -14,17 +10,20 @@ local backgroundMusicChannel
 
 local StartButton
 
---local myData = require( "mydata" )
-
 local function loadGame( event )
-    -- body
-    local options = {
-        effect = "crossFade",
-        time = 1000
-    }
+    
+    if (event.phase == "ended") then
 
-    composer.gotoScene( "gameMain", options )
+        print("Load Game")
+        local options = {
+            effect = "crossFade",
+            time = 1000
+        }
 
+        composer.removeScene("gameMain")
+        composer.gotoScene( "gameMain", options )
+        return true
+    end
 end
 
 function scene:create( event )
@@ -53,7 +52,7 @@ function scene:show( event )
     local sceneGroup = self.view
 
     if event.phase == "did" then
-        composer.removeScene( "gameMain" ) 
+        --composer.removeScene( "gameMain" ) 
     end
 end
 
@@ -61,6 +60,7 @@ function scene:hide( event )
     local sceneGroup = self.view
     
     if event.phase == "will" then
+         --composer.removeScene('menu')
     end
 
 end
