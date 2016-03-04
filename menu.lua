@@ -20,8 +20,8 @@ local function loadGame( event )
             time = 1000
         }
 
-        composer.removeScene("gameMain")
-        composer.gotoScene( "gameMain", options )
+        composer.removeScene("mainGame")
+        composer.gotoScene( "mainGame", options )
         return true
     end
 end
