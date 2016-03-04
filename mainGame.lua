@@ -1,73 +1,44 @@
----------------------------------------------------------------------------------
---
--- scene.lua
---
----------------------------------------------------------------------------------
-
-local sceneName = "mainGame"
+--Attack of the killer cubes
 
 local composer = require( "composer" )
-
--- Load scene with same root filename as this file
 local scene = composer.newScene()
 
----------------------------------------------------------------------------------
-
-local physics = require("physics")
-physics.start()
-physics.setGravity( 0, 15 )
+local physics = require( "physics" )
 
 local x
-
-
 local BackgroundImage
-
 local gameTimer
-
 local myCircle
-
 local player
-
 local Score = 0
 
 function scene:create( event )
+    
     local sceneGroup = self.view
 
-    x=display.contentWidth
+    --composer.removeScene( "menu" )
 
-    BackgroundImage = display.newImage( "bg2.jpg", true )
-    BackgroundImage.x = display.contentWidth / 2
-    BackgroundImage.y = display.contentHeight / 2
-    BackgroundImage.height = display.contentHeight
-    BackgroundImage.width = display.contentWidth * 1.5
-    sceneGroup:insert(BackgroundImage)
+    physics.start()
+    local function handleLoss( event )
 
-    ScoreText = display.newText("SCORE: "..Score, 20, 20,'blowbrush',24)
-    ScoreText:setFillColor(0)
-    sceneGroup:insert(ScoreText)
+        --composer.removeScene("menu")
+        composer.gotoScene("menu", { time= 500, effect = "crossFade" })
 
-    myCircle = display.newCircle( display.contentWidth / 2, display.contentHeight + 280, display.contentWidth / 1.1 )
-    myCircle:setFillColor(0)
-    physics.addBody( myCircle, "static", { friction=0, density=1, bounce=0 } )
-    sceneGroup:insert(myCircle)
+        return true
 
-    player = display.newRect(display.contentWidth/2,display.contentHeight/2 - 10,20,20)
-    player:setFillColor(0)
-    physics.addBody(player, "dynamic", {friction=1, density=1, bounce=0 })
-    player.isFixedRotation = true
-    sceneGroup:insert(player)
+    end
 
     local function movePlayer( event )
 
         if(event.phase == "began") then
            
+        else
+           
            player.rotation = player.rotation + 180
            transition.to(player,{rotation=-180})
            
            player:setLinearVelocity(0, -230)
-          
-        else
-            
+
         end
 
     end
@@ -76,16 +47,7 @@ function scene:create( event )
         -- body
         if (player.x ~= display.contentWidth/2) then
 
-            Runtime:removeEventListener( "touch", movePlayer)
-            timer.cancel(gameTimer)
-            --composer.removeScene("mainGame")
-            local options = {
-                effect = "fade",
-                time = 1000
-            }   
-
-            composer.gotoScene( "menu", options )
-            --composer.gotoScene( "menu" )
+            handleLoss()
             
         end
     end
@@ -111,6 +73,30 @@ function scene:create( event )
       
     end
 
+    x=display.contentWidth
+
+    BackgroundImage = display.newImage( "bg2.jpg", true )
+    BackgroundImage.x = display.contentWidth / 2
+    BackgroundImage.y = display.contentHeight / 2
+    BackgroundImage.height = display.contentHeight
+    BackgroundImage.width = display.contentWidth * 1.5
+    sceneGroup:insert(BackgroundImage)
+
+    ScoreText = display.newText("SCORE: "..Score, 20, 20,'blowbrush',24)
+    ScoreText:setFillColor(0)
+    sceneGroup:insert(ScoreText)
+
+    myCircle = display.newCircle( display.contentWidth / 2, display.contentHeight + 280, display.contentWidth / 1.1 )
+    myCircle:setFillColor(0)
+    physics.addBody( myCircle, "static", { friction=0, density=1, bounce=0 } )
+    sceneGroup:insert(myCircle)
+
+    player = display.newRect(display.contentWidth/2,display.contentHeight/2 - 10,20,20)
+    player:setFillColor(0)
+    physics.addBody(player, "dynamic", {friction=1, density=1, bounce=0 })
+    player.isFixedRotation = true
+    sceneGroup:insert(player)
+
 
     gameTimer = timer.performWithDelay( 1000, listener, 0 )  --fire every 10 seconds
 
@@ -119,54 +105,63 @@ function scene:create( event )
 
 end
 
+--
+-- This gets called twice, once before the scene is moved on screen and again once
+-- afterwards as a result of calling composer.gotoScene()
+--
 function scene:show( event )
+    --
+    -- Make a local reference to the scene's view for scene:show()
+    --
     local sceneGroup = self.view
-    local phase = event.phase
 
-    if phase == "will" then
+    
+    if event.phase == "did" then
         
-    elseif phase == "did" then
+        physics.start()
         
-    end 
+        physics.setGravity( 0, 15 )
+       
+    else -- event.phase == "will"
+       
+    end
 end
+
+--
 
 function scene:hide( event )
     local sceneGroup = self.view
-    local phase = event.phase
-
+    
     if event.phase == "will" then
-        -- Called when the scene is on screen and is about to move off screen
+        -- The "will" phase happens before the scene is transitioned off screen. Stop
+        -- anything you started elsewhere that could still be moving or triggering such as:
+        -- Remove enterFrame listeners here
+        -- stop timers, phsics, any audio playing
         --
-        -- INSERT code here to pause the scene
-        -- e.g. stop timers, stop animation, unload sounds, etc.)
-    elseif phase == "did" then
-        -- Called when the scene is now off screen
-		
-    end 
+        --physics.stop()        
+        timer.cancel( gameTimer )
+    end
+
 end
 
-
+--
+-- When you call composer.removeScene() from another module, composer will go through and
+-- remove anything created with display.* and inserted into the scene's view group for you. In
+-- many cases that's sufficent to remove your scene. 
+--
+-- But there may be somethings you loaded, like audio in scene:create() that won't be disposed for
+-- you. This is where you dispose of those things.
+-- In most cases there won't be much to do here.
 function scene:destroy( event )
     local sceneGroup = self.view
-
-    -- Called prior to the removal of scene's "view" (sceneGroup)
-    -- 
-    -- INSERT code here to cleanup the scene
-    -- e.g. remove display objects, remove touch listeners, save state, etc
-   --Runtime:removeEventListener( "touch", movePlayer)
-    -- --display:remove(player)
-    timer.cancel(gameTimer)
-    --composer.removeScene("mainGame");
+    
 end
 
 ---------------------------------------------------------------------------------
-
--- Listener setup
+-- END OF YOUR IMPLEMENTATION
+---------------------------------------------------------------------------------
 scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
-
----------------------------------------------------------------------------------
-
 return scene
